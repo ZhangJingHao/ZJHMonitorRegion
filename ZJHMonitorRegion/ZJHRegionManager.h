@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong) NSArray *locationArr;
 
+- (void)getNowStatus;
+
 - (void)starMonitorRegion;
 
 // 本地通知

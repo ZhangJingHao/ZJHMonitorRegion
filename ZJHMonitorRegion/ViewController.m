@@ -24,11 +24,19 @@
     
     [self setupUI];
         
-    self.navigationItem.rightBarButtonItem =
-    [[UIBarButtonItem alloc] initWithTitle:@"我的位置"
+    UIBarButtonItem *item1 =
+    [[UIBarButtonItem alloc] initWithTitle:@"位置"
                                      style:UIBarButtonItemStylePlain
                                     target:self
                                     action:@selector(resetLocation)];
+    
+    UIBarButtonItem *item2 =
+    self.navigationItem.rightBarButtonItem =
+    [[UIBarButtonItem alloc] initWithTitle:@"状态"
+                                     style:UIBarButtonItemStylePlain
+                                    target:self
+                                    action:@selector(getNowStatus)];
+    self.navigationItem.rightBarButtonItems = @[item1, item2];
 
 }
 
@@ -73,6 +81,10 @@
 - (void)resetLocation {
     // 定位到我的位置
     [self.mapView setCenterCoordinate:_mapView.userLocation.coordinate animated:YES];
+}
+
+- (void)getNowStatus {
+    [[ZJHRegionManager shareInstance] getNowStatus];
 }
 
 - (MKOverlayRenderer *)mapView:(MKMapView *)mapView rendererForOverlay:(id<MKOverlay>)overlay {

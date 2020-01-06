@@ -45,15 +45,33 @@
 
 - (NSArray *)locationArr {
     if (!_locationArr) {
-        // 配置需要监听的地理位置
-        _locationArr = @[ @{@"latitude":@"39.907826)", @"longitude":@"116.391211"},
-                          @{@"latitude":@"31.245105)", @"longitude":@"121.506377"} ];
+        /*
+        需求根据对应地图设置坐标
+        iOS，原生坐标系为 WGS-84
+        高德以及国内坐标系：GCS-02
+        百度的偏移坐标系：BD-09
+        */
+        
+        // 配置需要监听的地理位置：以高德地图天安门为例
+        _locationArr = @[ @{@"latitude":@"39.909187", @"longitude":@"116.397451"}];
     }
     return _locationArr;
 }
 
+- (void)getNowStatus {
+    for (CLRegion *monitoredRegion in self.locationMgr.monitoredRegions) {
+        NSLog(@"获取状态 ： %@", monitoredRegion.identifier);
+        [self.locationMgr requestStateForRegion:monitoredRegion];
+    }
+}
+
 // 开始监听
 - (void)starMonitorRegion {
+    for (CLRegion *monitoredRegion in self.locationMgr.monitoredRegions) {
+        NSLog(@"移除: %@", monitoredRegion.identifier);
+        [self.locationMgr stopMonitoringForRegion:monitoredRegion];
+    }
+    
     for (NSDictionary *dict in self.locationArr) {
         CLLocationDegrees latitude = [dict[@"latitude"] doubleValue];
         CLLocationDegrees longitude = [dict[@"longitude"] doubleValue];
@@ -84,8 +102,6 @@
                                                    identifier:identifier];
     // 开始监听fkit区域
     [self.locationMgr startMonitoringForRegion:fkit];
-    // 请求区域状态(如果发生了进入或者离开区域的动作也会调用对应的代理方法)
-    [self.locationMgr requestStateForRegion:fkit];
 }
 
 // 进入指定区域以后将弹出提示框提示用户
@@ -122,6 +138,27 @@
 
 - (void)locationManager:(CLLocationManager *)manager didStartMonitoringForRegion:(CLRegion *)region {
     NSLog(@"开始监听");
+}
+
+// 当前状态
+- (void)locationManager:(CLLocationManager *)manager
+      didDetermineState:(CLRegionState)state
+              forRegion:(CLRegion *)region {
+    NSString *str = nil;
+    switch (state) {
+        case CLRegionStateInside:
+            str = [NSString stringWithFormat:@"在圈内 %@", region.identifier];
+            break;
+        case CLRegionStateOutside:
+            str = [NSString stringWithFormat:@"在圈外 %@", region.identifier];
+            break;
+        case CLRegionStateUnknown:
+            str = [NSString stringWithFormat:@"未知 %@", region.identifier];
+            break;
+        default:
+            break;
+    }
+    [self alertWithMsg:str];
 }
 
 // 本地通知
